@@ -160,7 +160,7 @@ for derivtype = 1:4
     texty = [' max( log( |P(x,t) - Preal(x,t)| / |preal| )'];
     ylabel(texty)
     hold on;
-    plot(x_grid,max(Z_impl_errors'),'-k','Linewidth',1)
+    plot(x_grid,max(Z_impl_errors'),'-r','Linewidth',1)
     title(['Max relative error along x axis w/ ', word,' Derivative Method'])
     plotName = ['plots\ex',exercise,'_max(abs_error)',num2str(derivtype)];
     hold off;
