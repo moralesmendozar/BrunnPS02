@@ -11,23 +11,23 @@ clc;
 options = optimset('Display', 'off');
 xmin = -5;
 xmax = 5;
-xstep = 0.01; %0.1  %then 0.05
+xstep = 0.1; %0.1  %then 0.05
 x_grid = xmin:xstep:xmax;
 n = length(x_grid);
 tmin = 0;
-tmax = 1;
-tstep = 0.0001;%0.1%0.005;
+tmax = 2;  %1
+tstep = 0.005;%0.1%0.005;
 t_grid = tmin:tstep:tmax;
 T = length(t_grid);
 xx = x_grid'*ones(1,T);
 tt = ones(n,1)*t_grid;
 % parameters:
-theta = 0;
-sigma = 0.33;
+theta =0.001;
+sigma = 1; %0.33
 xbar = 0;
-m0 = -3;
+m0 = 0;  %-3
 v0 = 0.33;
-p0 = normpdf(x_grid,m0,v0);
+p0 = normpdf(x_grid,m0,sqrt(v0));
 pN = p0;
 if theta == 0
     v =@(t) v0;
@@ -39,19 +39,19 @@ end
 %Analytical solution to the PDE
 p_real =@(x,t) normpdf( (x-m(t))./(sqrt(v(t))))./(sqrt(v(t)));
 preal = p_real(xx,tt);
-
+%Explicit, ImplicitEuler Methods with forward, backward, etc.
 counterFig =0;
-for derivtype = 1:3
+for derivtype = 1:4
     counterFig = counterFig +1;
     %Explicit, ImplicitEuler Methods with forward, backward, etc.
     if derivtype == 1
-        word = 'central';
+        word = 'Central';
     elseif derivtype ==2
-        word = 'left';
+        word = 'Left';
     elseif derivtype ==3
-        word = 'right';
+        word = 'Right';
     elseif derivtype ==4
-        word = 'upwind';
+        word = 'Upwind';
     else
         word = 'no such method';
         display(word)
@@ -69,9 +69,8 @@ for derivtype = 1:3
     %tic
     %display(['Running matlabSolver with ',word, ' Derivative...'])
     %p_matlabSolver = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, 3,1);
-    %display('Running time = ...')
-    %3D plot p_explicit vs preal
-
+    % toc
+    %2D plot p_explicit vs preal
     columna = 10;
     figure(counterFig)
     plot(x_grid,p_explicitEuler(:,columna),'--r','Linewidth',2)
@@ -84,7 +83,10 @@ for derivtype = 1:3
     plot(x_grid,preal(:,columna),'-k')
     %legend('Explicit Euler','Implicit Euler','Matlab Solution','Analytical solution');
     legend('Explicit Euler','Implicit Euler','Analytical solution')
+    title([word,' Derivative Method'])
     hold off;
+    %2D plot log_error of  p_explicit vs preal
+    
     
 end
 

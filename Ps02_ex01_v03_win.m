@@ -11,12 +11,12 @@ clc;
 options = optimset('Display', 'off');
 xmin = -5;
 xmax = 5;
-xstep = 0.01; %0.1  %then 0.05
+xstep = 0.1; %0.1  %then 0.05
 x_grid = xmin:xstep:xmax;
 n = length(x_grid);
 tmin = 0;
 tmax = 1;
-tstep = 0.0001;%0.1%0.005;
+tstep = 0.1;%0.1%0.005;
 t_grid = tmin:tstep:tmax;
 T = length(t_grid);
 xx = x_grid'*ones(1,T);
