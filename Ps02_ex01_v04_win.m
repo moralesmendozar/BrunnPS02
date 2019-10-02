@@ -25,7 +25,7 @@ xmax = 5;
 %     xnext = xnext + xstep;
 % end
 % x_grid = [x_grid xmax];
-xstep = 0.1; %0.1, 0.05   
+xstep = 0.05; %0.1, 0.05   
 x_grid = xmin:xstep:xmax;
 n = length(x_grid);
 tmin = 0;
@@ -40,7 +40,7 @@ theta =3;  %0 = 0. 001,   3, 0.5
 sigma = 0.33; %1, 0.33,   0
 xbar = 0;
 m0 = -3;  %0, -3,  0
-v0 = 0.1; %0.1  0.33,  0.1
+v0 = 0.33; %0.1  0.33,  0.1
 p0 = normpdf(x_grid,m0,sqrt(v0));
 pN = p0;
 if theta == 0
@@ -82,8 +82,6 @@ for derivtype = 1:4
     %display(['Running matlabSolver with ',word, ' Derivative...'])
     %p_matlabSolver = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, 3,1);
     % toc
-%end
-
 % Plot of P(x,t=columna) for explicit, implicit, et.al.
     counterFig = 0;
 %for derivtype = 1:4
@@ -118,7 +116,8 @@ for derivtype = 1:4
     plotName = ['plots\ex',exercise,'_P(x,t=15)',num2str(derivtype)];
     print(plotName,'-dpng')
 %end
-
+end 
+%%
 %% 3D plot log_error of  |p_explicit - preal|
 %counterFig = 0;
 %for derivtype = 1:4
@@ -232,6 +231,6 @@ for derivtype = 1:4
     legend({'Explicit Euler','Implicit Euler'},'Location','Southeast')
     print(plotName,'-dpng')
     close all;
-end
+%end
 
 
