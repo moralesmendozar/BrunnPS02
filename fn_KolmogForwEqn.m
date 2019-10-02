@@ -30,9 +30,10 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
             for t = 2:T
                 deltat = t_grid(t) - t_grid(t-1);
                 for ii = 2:(n-1)
-                    deltax = x_grid(ii) - x_grid(ii-1);
+                    deltaxd = x_grid(ii+1) - x_grid(ii-1);
+                    deltax =  x_grid(ii+1) - x_grid(ii);
                     pstatic = theta *P(ii,t-1);
-                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii+1,t-1)-P(ii-1,t-1))/(deltax);
+                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii+1,t-1)-P(ii-1,t-1))/(deltaxd);
                     pde_secondDeriv = sigma^2/2*(P(ii+1,t-1)+P(ii-1,t-1)-2*P(ii,t-1))/(deltax)^2;
                     pde_it = pstatic + pde_firstDeriv + pde_secondDeriv;
                     P(ii,t) = P(ii,t-1) + deltat*(pde_it);
@@ -43,9 +44,10 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
             for t = 2:T
                 deltat = t_grid(t) - t_grid(t-1);
                 for ii = 2:(n-1)
-                    deltax = x_grid(ii) - x_grid(ii-1);
+                    deltaxd = x_grid(ii) - x_grid(ii-1);
+                    deltax =  x_grid(ii+1) - x_grid(ii);
                     pstatic = theta *P(ii,t-1);
-                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii,t-1)-P(ii-1,t-1))/(deltax);
+                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii,t-1)-P(ii-1,t-1))/(deltaxd);
                     pde_secondDeriv = sigma^2/2*(P(ii+1,t-1)+P(ii-1,t-1)-2*P(ii,t-1))/(deltax)^2;
                     pde_it = pstatic + pde_firstDeriv + pde_secondDeriv;
                     P(ii,t) = P(ii,t-1) + deltat*(pde_it);
@@ -56,9 +58,10 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
             for t = 2:T
                 deltat = t_grid(t) - t_grid(t-1);
                 for ii = 2:(n-1)
-                    deltax = x_grid(ii) - x_grid(ii-1);
+                    deltaxd = x_grid(ii+1) - x_grid(ii);
+                    deltax =  x_grid(ii+1) - x_grid(ii);
                     pstatic = theta *P(ii,t-1);
-                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii+1,t-1)-P(ii,t-1))/(deltax);
+                    pde_firstDeriv = theta*( x_grid(ii) - xbar)*(P(ii+1,t-1)-P(ii,t-1))/(deltaxd);
                     pde_secondDeriv = sigma^2/2*(P(ii+1,t-1)+P(ii-1,t-1)-2*P(ii,t-1))/(deltax)^2;
                     pde_it = pstatic + pde_firstDeriv + pde_secondDeriv;
                     P(ii,t) = P(ii,t-1) + deltat*(pde_it);
@@ -69,16 +72,18 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
             for t = 2:T
                 deltat = t_grid(t) - t_grid(t-1);
                 for ii = 2:(n-1)
-                    deltax = x_grid(ii) - x_grid(ii-1);
                     pstatic = theta *P(ii,t-1);
                     coeffOfDx = theta*( x_grid(ii) - xbar);
                     if coeffOfDx >= 0 
+                        deltax = x_grid(ii+1) - x_grid(ii);
                         derivRight = (P(ii+1,t-1)-P(ii,t-1))/(deltax);
                         pde_firstDeriv = coeffOfDx*derivRight;
                     else
+                        deltax = x_grid(ii) - x_grid(ii-1);
                         derivLeft = (P(ii,t-1)-P(ii-1,t-1))/(deltax);
                         pde_firstDeriv = coeffOfDx*derivLeft;
-                    end  
+                    end
+                    deltax =  x_grid(ii+1) - x_grid(ii);
                     pde_secondDeriv = sigma^2/2*(P(ii+1,t-1)+P(ii-1,t-1)-2*P(ii,t-1))/(deltax)^2;
                     pde_it = pstatic + pde_firstDeriv + pde_secondDeriv;
                     P(ii,t) = P(ii,t-1) + deltat*(pde_it);
@@ -88,26 +93,29 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
             display('Error, derivType not found')
         end
     elseif type ==2
-        %Implicit Method
+        %Implicit Euler Method
         if derivtype == 1 %center, implicit
             %center, implicit
             for t = 2:T
                 deltat = t_grid(t) - t_grid(t-1);
                 A = zeros(n-2);
                 b = zeros(n-2,1);
-                deltax1 = x_grid(2)-x_grid(1);
+                deltax1d = x_grid(3)-x_grid(1);
+                deltax1 = x_grid(3) - x_grid(2);
                 A(1,1) = (1+ deltat*sigma^2/deltax1^2 -deltat*theta);
-                A(1,2) = -deltat*theta*(xx(2,t)-xbar)/deltax1 - deltat*sigma^2/(2*deltax1^2);
+                A(1,2) = -deltat*theta*(xx(2,t)-xbar)/deltax1d - deltat*sigma^2/(2*deltax1^2);
+                deltaxnd = x_grid(n)-x_grid(n-2);
                 deltaxn = x_grid(n)-x_grid(n-1);
-                A(n-2,n-3) = deltat*theta*(xx(n-1,t)-xbar)/deltaxn - deltat*sigma^2/(2*deltaxn^2);
+                A(n-2,n-3) = deltat*theta*(xx(n-1,t)-xbar)/deltaxnd - deltat*sigma^2/(2*deltaxn^2);
                 A(n-2,n-2) = (1+ deltat*sigma^2/deltaxn^2 -deltat*theta);
-                b(1) = P(2,t-1) + P(1,t)*(-deltat*theta*(xx(2,t)-xbar)/deltax1+deltat*sigma^2/(2*deltax1^2));
-                b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2) + deltat*theta*(xx(n-1,t)-xbar)/deltax1);
+                b(1) = P(2,t-1) + P(1,t)*(-deltat*theta*(xx(2,t)-xbar)/deltax1d+deltat*sigma^2/(2*deltax1^2));
+                b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2) + deltat*theta*(xx(n-1,t)-xbar)/deltaxnd);
                 for ii = 2:(n-3)
+                    deltaxid = x_grid(ii+1) - x_grid(ii-1);
                     deltaxi = x_grid(ii+1) - x_grid(ii);
-                    A(ii,ii-1) = deltat*theta*(xx(ii+1,t)-xbar)/deltaxi - deltat*sigma^2/(2*deltaxi^2);
+                    A(ii,ii-1) = deltat*theta*(xx(ii+1,t)-xbar)/deltaxid - deltat*sigma^2/(2*deltaxi^2);
                     A(ii,ii) = (1+ deltat*sigma^2/deltaxi^2 -deltat*theta);
-                    A(ii,ii+1) = -deltat*theta*(xx(ii+1,t)-xbar)/deltaxi - deltat*sigma^2/(2*deltaxi^2);
+                    A(ii,ii+1) = -deltat*theta*(xx(ii+1,t)-xbar)/deltaxid - deltat*sigma^2/(2*deltaxi^2);
                     b(ii) = P(ii+1,t-1);
                 end
                 Psolvetemp = A\b;
@@ -119,18 +127,21 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
                 deltat = t_grid(t) - t_grid(t-1);
                 A = zeros(n-2);
                 b = zeros(n-2,1);
-                deltax1 = x_grid(2)-x_grid(1);
-                A(1,1) = (1-deltat*theta*(xx(2,t)-xbar)/deltax1 + deltat*sigma^2/deltax1^2 -deltat*theta);
+                deltax1d = x_grid(2)-x_grid(1);
+                deltax1 = x_grid(3)-x_grid(2);
+                A(1,1) = (1-deltat*theta*(xx(2,t)-xbar)/deltax1d + deltat*sigma^2/deltax1^2 -deltat*theta);
                 A(1,2) = - deltat*sigma^2/(2*deltax1^2);
+                deltaxnd = x_grid(n-1)-x_grid(n-2);
                 deltaxn = x_grid(n)-x_grid(n-1);
-                A(n-2,n-3) = deltat*theta*(xx(n-1,t)-xbar)/deltaxn - deltat*sigma^2/(2*deltaxn^2);
-                A(n-2,n-2) = (1-deltat*theta*(xx(n-1,t)-xbar)/deltaxn + deltat*sigma^2/deltaxn^2 -deltat*theta);
-                b(1) = P(2,t-1) + P(1,t)*(-deltat*theta*(xx(2,t)-xbar)/deltax1+deltat*sigma^2/(2*deltax1^2));
+                A(n-2,n-3) = deltat*theta*(xx(n-1,t)-xbar)/deltaxnd - deltat*sigma^2/(2*deltaxn^2);
+                A(n-2,n-2) = (1-deltat*theta*(xx(n-1,t)-xbar)/deltaxnd + deltat*sigma^2/deltaxn^2 -deltat*theta);
+                b(1) = P(2,t-1) + P(1,t)*(-deltat*theta*(xx(2,t)-xbar)/deltax1d+deltat*sigma^2/(2*deltax1^2));
                 b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2));
                 for ii = 2:(n-3)
+                    deltaxid = x_grid(ii) - x_grid(ii-1);
                     deltaxi = x_grid(ii+1) - x_grid(ii);
-                    A(ii,ii-1) = deltat*theta*(xx(ii+1,t)-xbar)/deltaxi - deltat*sigma^2/(2*deltaxi^2);
-                    A(ii,ii) = (1-deltat*theta*(xx(ii+1,t)-xbar)/deltaxi + deltat*sigma^2/deltaxi^2 -deltat*theta);
+                    A(ii,ii-1) = deltat*theta*(xx(ii+1,t)-xbar)/deltaxid - deltat*sigma^2/(2*deltaxi^2);
+                    A(ii,ii) = (1-deltat*theta*(xx(ii+1,t)-xbar)/deltaxid + deltat*sigma^2/deltaxi^2 -deltat*theta);
                     A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2);
                     b(ii) = P(ii+1,t-1);
                 end
@@ -143,19 +154,22 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
                 deltat = t_grid(t) - t_grid(t-1);
                 A = zeros(n-2);
                 b = zeros(n-2,1);
-                deltax1 = x_grid(2)-x_grid(1);
-                A(1,1) = (1 +deltat*theta*(xx(2,t)-xbar)/deltax1 + deltat*sigma^2/deltax1^2 -deltat*theta);
-                A(1,2) = - deltat*sigma^2/(2*deltax1^2)-deltat*theta*(xx(2,t)-xbar)/deltax1;
+                deltax1d = x_grid(3)-x_grid(2);
+                deltax1 = x_grid(3)-x_grid(2);
+                A(1,1) = (1 +deltat*theta*(xx(2,t)-xbar)/deltax1d + deltat*sigma^2/deltax1^2 -deltat*theta);
+                A(1,2) = - deltat*sigma^2/(2*deltax1^2)-deltat*theta*(xx(2,t)-xbar)/deltax1d;
+                deltaxnd = x_grid(n)-x_grid(n-1);
                 deltaxn = x_grid(n)-x_grid(n-1);
                 A(n-2,n-3) = - deltat*sigma^2/(2*deltaxn^2);
-                A(n-2,n-2) = (1 +deltat*theta*(xx(n-1,t)-xbar)/deltax1 + deltat*sigma^2/deltaxn^2 -deltat*theta);
+                A(n-2,n-2) = (1 +deltat*theta*(xx(n-1,t)-xbar)/deltaxnd + deltat*sigma^2/deltaxn^2 -deltat*theta);
                 b(1) = P(2,t-1) + P(1,t)*(deltat*sigma^2/(2*deltax1^2));
-                b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2)+deltat*theta*(xx(n-1,t)-xbar)/deltax1);
+                b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2)+deltat*theta*(xx(n-1,t)-xbar)/deltaxnd);
                 for ii = 2:(n-3)
+                    deltaxid = x_grid(ii+1) - x_grid(ii);
                     deltaxi = x_grid(ii+1) - x_grid(ii);
                     A(ii,ii-1) = - deltat*sigma^2/(2*deltaxi^2);
-                    A(ii,ii) = (1 + deltat*theta*(xx(ii+1,t)-xbar)/deltaxi + deltat*sigma^2/deltaxi^2 -deltat*theta);
-                    A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2)-deltat*theta*(xx(ii+1,t)-xbar)/deltax1;
+                    A(ii,ii) = (1 + deltat*theta*(xx(ii+1,t)-xbar)/deltaxid + deltat*sigma^2/deltaxi^2 -deltat*theta);
+                    A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2)-deltat*theta*(xx(ii+1,t)-xbar)/deltaxid;
                     b(ii) = P(ii+1,t-1);
                 end
                 Psolvetemp = A\b;
@@ -167,45 +181,52 @@ function [P] = fn_KolmogForwEqn(xx,tt,options, theta, sigma, xbar, p0, pN, type,
                 deltat = t_grid(t) - t_grid(t-1);
                 A = zeros(n-2);
                 b = zeros(n-2,1);
-                deltax1 = x_grid(2)-x_grid(1);
+                deltax1 = x_grid(3)-x_grid(2);
                 coeffOfDx = deltat*theta*(xx(2,t)-xbar);
                 if coeffOfDx >= 0
                     %Use right
-                    A(1,1) = (1 +coeffOfDx/deltax1 + deltat*sigma^2/deltax1^2 -deltat*theta);
-                    A(1,2) = - deltat*sigma^2/(2*deltax1^2)-coeffOfDx/deltax1;
+                    deltax1d = x_grid(3)-x_grid(2);
+                    A(1,1) = (1 +coeffOfDx/deltax1d + deltat*sigma^2/deltax1^2 -deltat*theta);
+                    A(1,2) = - deltat*sigma^2/(2*deltax1^2)-coeffOfDx/deltax1d;
                     b(1) = P(2,t-1) + P(1,t)*(deltat*sigma^2/(2*deltax1^2));
                 else
                     %use left
-                    A(1,1) = (1-coeffOfDx/deltax1 + deltat*sigma^2/deltax1^2 -deltat*theta);
+                    deltax1d = x_grid(2)-x_grid(1);
+                    A(1,1) = (1-coeffOfDx/deltax1d + deltat*sigma^2/deltax1^2 -deltat*theta);
                     A(1,2) = - deltat*sigma^2/(2*deltax1^2);
-                    b(1) = P(2,t-1) + P(1,t)*(-coeffOfDx/deltax1+deltat*sigma^2/(2*deltax1^2));
+                    b(1) = P(2,t-1) + P(1,t)*(-coeffOfDx/deltax1d+deltat*sigma^2/(2*deltax1^2));
                 end
                 deltaxn = x_grid(n)-x_grid(n-1);
                 coeffOfDx = deltat*theta*(xx(n-1,t)-xbar);
                 if coeffOfDx >= 0
+                    deltaxnd = x_grid(n)-x_grid(n-1);
                     %Use right
                     A(n-2,n-3) = - deltat*sigma^2/(2*deltaxn^2);
-                    A(n-2,n-2) = (1 +coeffOfDx/deltax1 + deltat*sigma^2/deltaxn^2 -deltat*theta);
-                    b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2)+coeffOfDx/deltax1);
+                    A(n-2,n-2) = (1 +coeffOfDx/deltaxnd + deltat*sigma^2/deltaxn^2 -deltat*theta);
+                    b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2)+coeffOfDx/deltaxnd);
                 else
                     %use left
-                    A(n-2,n-3) = coeffOfDx/deltaxn - deltat*sigma^2/(2*deltaxn^2);
-                    A(n-2,n-2) = (1-coeffOfDx/deltaxn + deltat*sigma^2/deltaxn^2 -deltat*theta);
+                    deltaxnd = x_grid(n-1)-x_grid(n-2);
+                    A(n-2,n-3) = coeffOfDx/deltaxnd - deltat*sigma^2/(2*deltaxn^2);
+                    A(n-2,n-2) = (1-coeffOfDx/deltaxnd + deltat*sigma^2/deltaxn^2 -deltat*theta);
                     b(n-2) = P(n-1,t-1) + P(n,t)*(deltat*sigma^2/(2*deltaxn^2));
                 end
                 for ii = 2:(n-3)
-                    deltaxi = x_grid(ii+1) - x_grid(ii);
                     coeffOfDx = deltat*theta*(xx(ii+1,t)-xbar);
                     if coeffOfDx >= 0
                         %Use right
+                        deltaxid = x_grid(ii+1) - x_grid(ii);
+                        deltaxi = x_grid(ii+1) - x_grid(ii);
                         A(ii,ii-1) = - deltat*sigma^2/(2*deltaxi^2);
-                        A(ii,ii) = (1 + coeffOfDx/deltaxi + deltat*sigma^2/deltaxi^2 -deltat*theta);
-                        A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2)-coeffOfDx/deltax1;
+                        A(ii,ii) = (1 + coeffOfDx/deltaxid + deltat*sigma^2/deltaxi^2 -deltat*theta);
+                        A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2)-coeffOfDx/deltaxid;
                         b(ii) = P(ii+1,t-1);
                     else
                         %use left
-                        A(ii,ii-1) = coeffOfDx/deltaxi - deltat*sigma^2/(2*deltaxi^2);
-                        A(ii,ii) = (1-coeffOfDx/deltaxi + deltat*sigma^2/deltaxi^2 -deltat*theta);
+                        deltaxid = x_grid(ii) - x_grid(ii-1);
+                        deltaxi = x_grid(ii+1) - x_grid(ii);
+                        A(ii,ii-1) = coeffOfDx/deltaxid - deltat*sigma^2/(2*deltaxi^2);
+                        A(ii,ii) = (1-coeffOfDx/deltaxid + deltat*sigma^2/deltaxi^2 -deltat*theta);
                         A(ii,ii+1) = - deltat*sigma^2/(2*deltaxi^2);
                         b(ii) = P(ii+1,t-1);
                     end
